@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: services/catalog/Catalog.API/Dockerfile
-    
     ports:
       - "8080:8080"
     depends_on:
@@ -27,6 +26,27 @@ services:
       - "27017:27017"
     volumes:
       - catalogdata:/data/db
+
+  basketdb:
+    image: redis:alpine
+    container_name: basketdb
+    restart: always
+    ports:
+      - "6379:6379"
+
+  basket.api:
+    image: ${DOCKER_REGISTRY-}basketapi
+    build:
+      context: .
+      dockerfile: services/Basket/Basket.API/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - basketdb
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      CacheSettings__connectionString: basketdb:6379
 
 volumes:
   catalogdata:

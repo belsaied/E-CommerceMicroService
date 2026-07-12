@@ -12,3 +12,10 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
     ports:
       - "8082:8080"
+  discount.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080"
+

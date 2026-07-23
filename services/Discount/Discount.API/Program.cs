@@ -9,17 +9,17 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddAutoMapper(cfg => { }, typeof(DiscountProfile).Assembly);
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly(),
     Assembly.GetAssembly(typeof(CreateDiscountCommand))));
-var app = builder.Build();
 
 builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
 builder.Services.AddGrpc();
+
+var app = builder.Build();   
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

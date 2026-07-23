@@ -35,7 +35,7 @@ services:
       - "6379:6379"
 
   discountdb:
-    image: postgres
+    image: postgres:16
     container_name: discountdb
     restart: always
     environment:
@@ -75,7 +75,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       CacheSettings__connectionString: basketdb:6379
-
+      GrpcSettings__DiscountUrl: http://discount.api:8080
   discount.api:
     image: ${DOCKER_REGISTRY-}discountapi
     build:
@@ -84,7 +84,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      DatabaseSettings__ConnectionString: Server=discountdb;Port=5432;Database=DiscountDb;Username=admin;Password=Password@1
+      DatabaseSettings__ConnectionString: Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=Password@1
     container_name: discount.api
     depends_on:
         discountdb:

@@ -7,16 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Basket.Core\Basket.Core.csproj" />
+    <ProjectReference Include="..\Ordering.Core\Ordering.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.1.3" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="MediatR" Version="13.0.0" />
   </ItemGroup>
 
-	<ItemGroup>
-		<Protobuf Include="..\..\..\services\Discount\Discount.Application\Protos\discount.proto" Link="Protos\discount.proto" GrpcServices="Client" />
-	</ItemGroup>
 </Project>

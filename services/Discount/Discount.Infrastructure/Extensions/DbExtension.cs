@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace Discount.Infrastructure.Extensions
 {
-    public static class DbExtension 
+    public static class DbExtension
     {
         public static IHost MigrateDatabase<TContext>(this IHost host)
         {
@@ -45,7 +45,7 @@ namespace Discount.Infrastructure.Extensions
                     };
                     command.CommandText = "DROP TABLE IF EXISTS Coupon";
                     command.ExecuteNonQuery();
-                    command.CommandText = @"CREATE TABLE IF NOT EXISTS Coupon(Id SERIAL PRIMARY KEY, ProductName VARCHAR(50) NOT NULL, Description TEXT, Amount INT)";
+                    command.CommandText = @"CREATE TABLE IF NOT EXISTS Coupon(Id SERIAL PRIMARY KEY, ProductName VARCHAR(50) NOT NULL UNIQUE, Description TEXT, Amount INT)";
                     command.ExecuteNonQuery();
                     command.CommandText = "INSERT INTO Coupon(ProductName, Description, Amount) VALUES('Egypt Adidas Quick Force Indoor Badminton Shoes', 'Adidas Discount', 600) ON CONFLICT (ProductName) DO NOTHING";
                     command.ExecuteNonQuery();
@@ -61,7 +61,7 @@ namespace Discount.Infrastructure.Extensions
                         throw; // Rethrow the exception if no retries left
                     }
                     Thread.Sleep(2000); // Wait for 2 seconds before retrying
-                } 
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ namespace Ordering.Infrastructure.Data
         public OrderContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<OrderContext>();
-            optionsBuilder.UseSqlServer("Server=localhost;Database=OrderDb2;Trusted_Connection=true;TrustServerCertificate=true");
+            optionsBuilder.UseSqlServer("Server=localhost;Database=OrderDb2;User Id=sa;Password=P@ssw0rd123;TrustServerCertificate=True;");
             return new OrderContext(optionsBuilder.Options);
         }
     }

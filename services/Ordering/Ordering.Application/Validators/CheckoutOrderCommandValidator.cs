@@ -3,7 +3,7 @@ using Ordering.Application.Commands;
 
 namespace Ordering.Application.Validators
 {
-    // instead of using fluent APIs but the same purpose
+    // instead of using Data annotations in the DTOs.
     public class CheckoutOrderCommandValidator : AbstractValidator<CheckoutOrderCommand>
     {
         public CheckoutOrderCommandValidator()
@@ -30,6 +30,7 @@ namespace Ordering.Application.Validators
                 .NotEmpty()
                 .NotNull()
                 .WithMessage("{FirstName} is required");
+
             RuleFor(o => o.LastName)
                 .NotEmpty()
                 .NotNull()

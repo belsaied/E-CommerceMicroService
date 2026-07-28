@@ -51,6 +51,25 @@ services:
        interval: 10s
        timeout: 5s
        retries: 5
+
+  orderdb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: orderdb
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "P@ssw0rd123"
+
+    restart: always
+    ports:
+      - "1433:1433"
+    volumes:
+      - orderdb-data:/var/opt/mssql
+    healthcheck:
+       test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd123' -Q 'SELECT 1'"]
+       interval: 10s
+       timeout: 10s
+       retries: 5
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -92,7 +111,22 @@ services:
     ports:
      - "8084:8080"
 
+  ordering.api:
+    image: ${DOCKER_REGISTRY-}orderingapi
+    build:
+      context: .
+      dockerfile: services/Ordering/Ordering.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__OrderingConnectionString: Server=orderdb;Database=OrderDb2;User Id=sa;Password=P@ssw0rd123;TrustServerCertificate=True;
+    depends_on:
+      orderdb:
+        condition: service_healthy
+    ports:
+      - "8086:8080"
 volumes:
   catalogdata:
   postgres_data:
   pgadmin_data:
+  orderdb-data:

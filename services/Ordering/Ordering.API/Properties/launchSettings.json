@@ -1,12 +1,14 @@
 {
   "profiles": {
-    "http": {
+    "Ordering.API": {
       "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5108"
+      "applicationUrl": "http://localhost:8086"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",

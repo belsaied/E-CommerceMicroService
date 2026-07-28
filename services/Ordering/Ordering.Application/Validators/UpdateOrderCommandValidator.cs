@@ -14,7 +14,6 @@ namespace Ordering.Application.Validators
                 .GreaterThan(0)
                 .WithMessage("{Id} cannot be -ve");
 
-
             RuleFor(o => o.UserName)
                  .NotEmpty()
                  .WithMessage("{UserName} is required")
@@ -37,6 +36,7 @@ namespace Ordering.Application.Validators
                 .NotEmpty()
                 .NotNull()
                 .WithMessage("{FirstName} is required");
+
             RuleFor(o => o.LastName)
                 .NotEmpty()
                 .NotNull()

@@ -31,9 +31,12 @@ services:
     image: redis:alpine
     container_name: basketdb
     restart: always
+    command: redis-server --appendonly yes
+
     ports:
       - "6379:6379"
-
+    volumes:
+      - basket-data:/data
   discountdb:
     image: postgres:16
     container_name: discountdb
@@ -144,3 +147,4 @@ volumes:
   postgres_data:
   pgadmin_data:
   orderdb-data:
+  basket-data:

@@ -4,6 +4,7 @@ using Basket.Application.Mappers;
 using Basket.Core.Repositories;
 using Basket.Infrastructure.Repositories;
 using Discount.gRPC.Protos;
+using MassTransit;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,17 @@ builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(
 {
     cfg.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]);
 });
+
+// identifying RabbitMQ host address from appsettings.json
+builder.Services.AddMassTransit(config =>
+{
+    config.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host(builder.Configuration["EventBusSettings:HostAddress"]);
+    });
+});
+builder.Services.AddMassTransitHostedService();
+
 builder.Services.AddApiVersioning(options =>
 {
     // return available versions in response header

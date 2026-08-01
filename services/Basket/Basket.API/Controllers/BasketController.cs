@@ -1,13 +1,18 @@
-﻿using Basket.Application.Commands;
+﻿using AutoMapper;
+using Basket.Application.Commands;
 using Basket.Application.Queries;
 using Basket.Application.Responses;
 using Basket.Core.Entities;
+using EventBus.Messages.Events;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Basket.API.Controllers
 {
-    public class BasketController(IMediator _mediator) : ApiBaseController
+    public class BasketController(IMediator _mediator 
+        , IPublishEndpoint _publishEndpoint 
+        , IMapper _mapper) : ApiBaseController
     {
         [HttpGet]
         [Route("[action]/{userName}", Name = "GetBasketByUserName")]
@@ -33,6 +38,28 @@ namespace Basket.API.Controllers
         public async Task<ActionResult<ShoppingCartResponse>> DeleteBasket(string userName)
         {
             return Ok(await _mediator.Send(new DeleteBasketByUserNameCommand(userName)));
+        }
+
+        [Route("[action]", Name = "CheckoutBasket")]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CheckoutBasket([FromBody] BasketCheckout basketCheckout)
+        {
+            var query = new GetBasketByUserNameQuery(basketCheckout.UserName);
+            var basket = await _mediator.Send(query);
+            if(basket == null)
+            {
+                return BadRequest();
+            }
+            var eventMsg = _mapper.Map<BasketCheckoutEvent>(basketCheckout);
+            eventMsg.TotalPrice = basket.TotalPrice;
+            await _publishEndpoint.Publish(eventMsg);
+
+            // remove from the basket after sending the checkout event to rabbitmq
+            var deletedcmd = new DeleteBasketByUserNameCommand(basketCheckout.UserName);
+            await _mediator.Send(deletedcmd);
+            return Accepted();
         }
     }
 }

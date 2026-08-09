@@ -3,12 +3,14 @@ using Catalog.Application.Queries;
 using Catalog.Core.Repositories;
 using Catalog.Infrastructure.Data.Contexts;
 using Catalog.Infrastructure.Repositories;
+using Common.Logging;
+using Serilog;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Host.UseSerilog(Logging.ConfigureLogging);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddAutoMapper(cfg => { }, typeof(ProductMappingProfile).Assembly);

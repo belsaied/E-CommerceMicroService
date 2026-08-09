@@ -1,3 +1,4 @@
+using Common.Logging;
 using EventBus.Messages.Common;
 using MassTransit;
 using MassTransit.MultiBus;
@@ -6,9 +7,15 @@ using Ordering.API.Extensions;
 using Ordering.Application.Extensions;
 using Ordering.Infrastructure.Data;
 using Ordering.Infrastructure.Extensions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-// API versioning.
+
+
+builder.Host.UseSerilog(Logging.ConfigureLogging);
+
+
+// API versioning
 builder.Services.AddApiVersioning(options =>
 {
     // return available versions in response header

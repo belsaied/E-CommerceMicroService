@@ -12,7 +12,8 @@ namespace Basket.API.Controllers
 {
     public class BasketController(IMediator _mediator 
         , IPublishEndpoint _publishEndpoint 
-        , IMapper _mapper) : ApiBaseController
+        , IMapper _mapper
+        ,ILogger<BasketController> _logger) : ApiBaseController
     {
         [HttpGet]
         [Route("[action]/{userName}", Name = "GetBasketByUserName")]
@@ -55,7 +56,7 @@ namespace Basket.API.Controllers
             var eventMsg = _mapper.Map<BasketCheckoutEvent>(basketCheckout);
             eventMsg.TotalPrice = basket.TotalPrice;
             await _publishEndpoint.Publish(eventMsg);
-
+            _logger.LogInformation($"BasketCheckoutEvent published successfully for user: {basket.UserName}");
             // remove from the basket after sending the checkout event to rabbitmq
             var deletedcmd = new DeleteBasketByUserNameCommand(basketCheckout.UserName);
             await _mediator.Send(deletedcmd);

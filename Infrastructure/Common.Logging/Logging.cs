@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -28,6 +29,17 @@ namespace Common.Logging
             }
 
             // ToDo: Adding Elastic Search configuration
+            var elasticurl = context.Configuration.GetValue<string>("ElasticConfiguration:Uri");
+            if(!string.IsNullOrEmpty(elasticurl))
+            {
+                loggerConfiguration.WriteTo.Elasticsearch(new Serilog.Sinks.Elasticsearch.ElasticsearchSinkOptions(new Uri(elasticurl))
+                {
+                    AutoRegisterTemplate = true,
+                    AutoRegisterTemplateVersion = Serilog.Sinks.Elasticsearch.AutoRegisterTemplateVersion.ESv8,
+                    IndexFormat = $"microservice-{env.ApplicationName?.ToLower().Replace(".", "-")}-{env.EnvironmentName?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                    MinimumLogEventLevel = LogEventLevel.Debug
+                });
+            }
         };
     }
 }

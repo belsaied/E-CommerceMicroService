@@ -7,6 +7,7 @@ using Common.Logging;
 using Discount.gRPC.Protos;
 using MassTransit;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,20 +47,50 @@ builder.Services.AddApiVersioning(options =>
     options.AssumeDefaultVersionWhenUnspecified = true;
     // Default API Version
     options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
 });
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "Basket API",
         Version = "v1",
-        Description = "Basket API for E-Commerce Microservice",
+        Description = "Basket API for E-Commerce Microservice version 1.0",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
             Name = "belal Saied",
             Email = "bellllyelnagggar225@gmail.com",
             Url = new Uri("https://github.com/belsaied")
         }
+    });
+
+    options.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Basket API",
+        Version = "v2",
+        Description = "Basket API for E-Commerce Microservice Version 2.0",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "belal Saied",
+            Email = "belalsaied78@gmail.com",
+            Url = new Uri("https://github.com/belsaied")
+        }
+    });
+
+    options.DocInclusionPredicate((version, desc) =>
+    {
+        if(!desc.TryGetMethodInfo(out MethodInfo methodInfo)) return false; 
+
+        var versions = methodInfo.DeclaringType?  // get the ApiVersion attribute from the controller
+            .GetCustomAttributes(true)
+            .OfType<Asp.Versioning.ApiVersionAttribute>()
+            .SelectMany(attr => attr.Versions);
+
+        return versions?.Any(v => $"v{v.ToString()}" == version) ?? false;
     });
 });
 
@@ -78,7 +109,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket.API v1");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "Basket.API v2");
+    });
 }
 
 app.UseAuthorization();

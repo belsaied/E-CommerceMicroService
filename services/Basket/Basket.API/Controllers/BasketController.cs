@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Basket.Application.Commands;
 using Basket.Application.Queries;
 using Basket.Application.Responses;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Basket.API.Controllers
 {
+    [ApiVersion("1.0")]
     public class BasketController(IMediator _mediator 
         , IPublishEndpoint _publishEndpoint 
         , IMapper _mapper

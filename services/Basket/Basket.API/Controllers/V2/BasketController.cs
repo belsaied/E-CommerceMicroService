@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Basket.API.Controllers.V2
 {
-    [ApiVersion("2.0")]
+    [ApiVersion("2")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class BasketController(IMapper _mapper , IMediator _mediator
         , ILogger<BasketController> _logger 
-        , IPublishEndpoint _publishEndpoint) : ApiBaseController
+        , IPublishEndpoint _publishEndpoint) : ControllerBase
     {
         [Route("[action]", Name = "CheckoutBasket")]
         [HttpPost]

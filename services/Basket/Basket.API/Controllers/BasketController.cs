@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Basket.API.Controllers
 {
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     public class BasketController(IMediator _mediator 
         , IPublishEndpoint _publishEndpoint 
         , IMapper _mapper

@@ -6,6 +6,9 @@ using Basket.Infrastructure.Repositories;
 using Common.Logging;
 using Discount.gRPC.Protos;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
@@ -15,7 +18,43 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Host.UseSerilog(Logging.ConfigureLogging);
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+// Add Idnetity Server Authentication (Duende)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://host.docker.internal:9009";
+        options.RequireHttpsMetadata = true;
+
+        // i have received ACCESS TOKEN should i grant access to the API or not ?
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "https://host.docker.internal:9009",
+            ValidateAudience = true,
+            ValidAudience = "Basket",
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
+        };
+        // Add this to docker to host communication .
+        options.BackchannelHttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("Authentication failed.");
+                Console.WriteLine($"Exception: {context.Exception.Message}");
+                Console.WriteLine($"Authority: {options.Authority}");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(BasketMappingProfile).Assembly);
@@ -27,6 +66,14 @@ builder.Services.AddScoped<DiscountGrpcService>();
 builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(cfg =>
 {
     cfg.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]);
+});
+
+var userPolicy = new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build();
+builder.Services.AddControllers(config =>
+{
+    config.Filters.Add(new AuthorizeFilter(userPolicy));
 });
 
 // identifying RabbitMQ host address from appsettings.json
@@ -115,7 +162,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "Basket.API v2");
     });
 }
-
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();

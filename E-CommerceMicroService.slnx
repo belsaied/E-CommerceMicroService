@@ -4,6 +4,7 @@
   </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="Infrastructure/Common.Logging/Common.Logging.csproj" Id="01714208-5790-484d-8797-84288d4f3540" />
+    <Project Path="Infrastructure/eShop.Identity/eShop.Identity.csproj" />
     <Project Path="Infrastructure/EventBus.Messages/EventBus.Messages.csproj" Id="a014446c-87d7-4843-a3f6-76180c0e4323" />
   </Folder>
   <Folder Name="/services/" />

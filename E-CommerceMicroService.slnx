@@ -2,6 +2,11 @@
   <Folder Name="/APIGateway/">
     <Project Path="APIGateway/Ocelot.APIGateway/Ocelot.APIGateway.csproj" Id="913e13eb-ca09-4cb4-b2d5-777ee4a10f29" />
   </Folder>
+  <Folder Name="/APIGateway/nginx/">
+    <File Path="APIGateway/nginx/id-local.conf" />
+    <File Path="APIGateway/nginx/nginx.Dockerfile" />
+    <File Path="APIGateway/nginx/nginx.local.conf" />
+  </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="Infrastructure/Common.Logging/Common.Logging.csproj" Id="01714208-5790-484d-8797-84288d4f3540" />
     <Project Path="Infrastructure/eShop.Identity/eShop.Identity.csproj" />

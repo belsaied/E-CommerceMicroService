@@ -1,5 +1,13 @@
 # E-Commerce Microservices Platform
 
+![.NET](https://img.shields.io/badge/.NET-Aspire-512BD4?style=flat-square&logo=dotnet&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20CQRS-blue?style=flat-square)
+![Messaging](https://img.shields.io/badge/Messaging-RabbitMQ%20%2B%20MassTransit-FF6600?style=flat-square)
+![RPC](https://img.shields.io/badge/RPC-gRPC-4285F4?style=flat-square)
+![Auth](https://img.shields.io/badge/Auth-Duende%20IdentityServer-000000?style=flat-square)
+![Observability](https://img.shields.io/badge/Observability-OpenTelemetry%20%2B%20ELK-005571?style=flat-square)
+![Containerized](https://img.shields.io/badge/Containerized-Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+
 A distributed, event-driven e-commerce backend built with .NET, designed around Clean Architecture and CQRS at the service level, and orchestrated with .NET Aspire. It splits a typical e-commerce domain (catalog, basket, discounts, ordering, identity) into independently deployable services that communicate synchronously (gRPC) where consistency and low latency matter, and asynchronously (RabbitMQ/MassTransit) where decoupling and resilience matter more.
 
 Repo: https://github.com/belsaied/E-CommerceMicroService
@@ -11,6 +19,24 @@ Repo: https://github.com/belsaied/E-CommerceMicroService
 A monolithic e-commerce app is simple to start with but gets painful fast: the catalog team can't ship independently of the ordering team, a spike in basket traffic can take down checkout, and every service is forced onto the same database technology whether it fits or not.
 
 This project splits the domain along business capability lines, gives each service its own datastore (polyglot persistence), and uses an API Gateway as the single entry point for clients. The trade-off is accepted deliberately: more moving parts and eventual consistency in exchange for independent scaling, independent deployability, and fault isolation.
+
+---
+
+## What actually changes coming from a monolith
+
+Splitting services is the headline, but most of the day-to-day engineering effort went into the things that a single-project, single-database app never has to think about:
+
+| Concern | Typical monolith | This project |
+|---|---|---|
+| Logging | `Console.WriteLine` / one log file, hard to correlate | **Serilog** structured logging in every service, shipped to **Elasticsearch**, searchable and correlated per request in **Kibana** |
+| Debugging a slow request | Add breakpoints, guess which layer is slow | **OpenTelemetry** distributed tracing across every service boundary, viewable end-to-end in the Aspire dashboard |
+| Changing an API contract | Break existing clients, or fork the whole app | **API versioning** (v1/v2 side by side) on Basket and Ordering, so `CheckoutBasket` evolved without breaking anyone already integrated |
+| One service crashes | Whole app goes down | Independent **health checks** (`/health`, `/alive`) per service, plus RabbitMQ decoupling checkout from ordering |
+| A slow downstream call | Whole request hangs or fails | .NET's **standard resilience handler** (retries, circuit breaking, timeouts) on every outbound HTTP call |
+| "Who is allowed to call this?" | Shared session / cookie auth baked into the app | **Duende IdentityServer** issuing JWTs, validated independently by every service — no shared state, fully stateless |
+| Local environment setup | One `dotnet run`, one connection string | **.NET Aspire** AppHost declares every resource and dependency graph (Mongo, Redis, Postgres, SQL Server, RabbitMQ, Elasticsearch/Kibana) and wires service discovery automatically |
+
+These are the pieces that made this feel less like "a project split into folders" and more like something that could actually run in production and be debugged when things go wrong.
 
 ---
 
@@ -53,7 +79,7 @@ All client traffic goes through Ocelot, which routes requests to the right downs
 Services don't handle their own user credentials. eShop.Identity issues JWTs (OIDC/OAuth2, including client-credentials flow for service-to-service calls and authorization-code + PKCE for interactive clients). Every downstream API validates the token's issuer, audience, and signature independently — there's no shared session state, which keeps services stateless and horizontally scalable.
 
 **API versioning**
-Basket.API and Ordering.API expose both v1 and v2 endpoints side by side (e.g. `CheckoutBasket` v1 vs v2, with a second `BasketCheckoutEventV2`/consumer pair), with Swagger correctly scoping each version's docs via a custom `DocInclusionPredicate`. This let the checkout contract evolve without breaking existing clients.
+Basket.API and Ordering.API expose both v1 and v2 endpoints side by side (e.g. `CheckoutBasket` v1 vs v2, with a second `BasketCheckoutEventV2`/consumer pair), with Swagger correctly scoping each version's docs via a custom `DocInclusionPredicate`. This let the checkout contract evolve without breaking existing clients. Versioning runs through the full stack, not just the controller: a versioned command (`CheckoutOrderCommandV2`), its own validator (`CheckoutOrderCommandValidatorV2`), its own handler, and its own MassTransit event/consumer pair all exist side by side with v1 — so old and new clients are served correctly at the same time, and the gateway routes each version to the right downstream endpoint via Ocelot.
 
 **Orchestration — .NET Aspire**
 Rather than hand-writing every connection string and startup order, the AppHost project declares each resource (MongoDB, Redis, Postgres, SQL Server, RabbitMQ, Elasticsearch/Kibana) and each service's dependency on it (`WithReference`, `WaitFor`), plus service discovery so services find each other by logical name instead of hardcoded hosts/ports. Docker Compose is still provided as a container-only alternative to running the full Aspire stack.
@@ -62,9 +88,10 @@ Rather than hand-writing every connection string and startup order, the AppHost 
 Every outbound HTTP call goes through .NET's standard resilience handler (`AddStandardResilienceHandler`), giving retries, circuit breaking, and timeouts by default rather than bespoke Polly policies per client.
 
 **Observability**
-- OpenTelemetry for tracing, metrics, and structured logging across every service
-- Serilog piping logs to Elasticsearch, visualized in Kibana
-- `/health` and `/alive` endpoints on every service for container/orchestrator health checks
+- **Serilog** replaces default framework logging in every service, writing structured (not plain-text) log events that carry context — for example, `BasketOrderingConsumer` logs with a `correlationId` scope on every message it consumes, so one checkout can be traced through Basket, RabbitMQ, and Ordering as a single thread in the logs, not three disconnected entries.
+- Those structured logs ship to **Elasticsearch** and are explored in **Kibana**, so debugging a production issue means searching by correlation ID or user instead of SSH-ing into a box and grepping a log file.
+- **OpenTelemetry** adds tracing and metrics on top (via the shared `ServiceDefaults` project), so every service gets consistent instrumentation for free rather than each team wiring it up differently.
+- `/health` and `/alive` endpoints on every service for container/orchestrator health checks, wired into the Aspire dashboard for a live view of what's up.
 
 ---
 

@@ -21,13 +21,6 @@ try
         .ConfigureServices()
         .ConfigurePipeline();
 
-    var forwarardHeaderOptions = new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-    };
-    forwarardHeaderOptions.KnownNetworks.Clear();
-    forwarardHeaderOptions.KnownProxies.Clear();
-    app.UseForwardedHeaders(forwarardHeaderOptions);
 
 
     app.Run();

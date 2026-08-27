@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Infrastructure\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\..\Infrastructure\EventBus.Messages\EventBus.Messages.csproj" />
+    <ProjectReference Include="..\..\..\ServiceDefaults\ECommerce.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Basket.Application\Basket.Application.csproj" />
     <ProjectReference Include="..\Basket.Infrastructure\Basket.Infrastructure.csproj" />
   </ItemGroup>

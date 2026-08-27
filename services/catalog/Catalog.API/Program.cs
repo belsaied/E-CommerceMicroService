@@ -4,6 +4,7 @@ using Catalog.Core.Repositories;
 using Catalog.Infrastructure.Data.Contexts;
 using Catalog.Infrastructure.Repositories;
 using Common.Logging;
+using ECommerce.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -12,6 +13,12 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.Configuration["DatabaseSettings:ConnectionString"] =
+    builder.Configuration.GetConnectionString("CatalogDb");
+builder.Configuration["ElasticConfiguration:Uri"] =
+    builder.Configuration.GetConnectionString("elasticsearch");
 // Add services to the container.
 builder.Host.UseSerilog(Logging.ConfigureLogging);
 builder.Services.AddControllers();
@@ -20,14 +27,14 @@ builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://host.docker.internal:9009";
+        var authAuthority = builder.Configuration["Auth:Authority"]!;
+        options.Authority = authAuthority;
         options.RequireHttpsMetadata = true;
 
-        // i have received ACCESS TOKEN should i grant access to the API or not ?
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://host.docker.internal:9009",
+            ValidIssuer = authAuthority,
             ValidateAudience = true,
             ValidAudience = "Catalog",
             ValidateLifetime = true,
@@ -115,6 +122,8 @@ if (app.Environment.IsDevelopment())
 }
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapDefaultEndpoints();
 
 app.MapControllers();
 

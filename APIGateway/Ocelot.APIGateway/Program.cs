@@ -1,8 +1,11 @@
+using ECommerce.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 // Add services to the container.
 
@@ -12,13 +15,14 @@ var authSchema = "EShopGatewayAuthSchema";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(authSchema, options =>
     {
-        options.Authority = "https://host.docker.internal:9009";
+        var authAuthority = builder.Configuration["Auth:Authority"]!;
+        options.Authority = authAuthority;
         options.RequireHttpsMetadata = true;
 
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://host.docker.internal:9009",
+            ValidIssuer = authAuthority,
             ValidateAudience = true,
             ValidAudience = "eshopgateway",
             ValidateLifetime = true,
@@ -60,6 +64,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapDefaultEndpoints();
 
 // default route for testing ocelot gateway
 app.UseEndpoints(endpoints =>

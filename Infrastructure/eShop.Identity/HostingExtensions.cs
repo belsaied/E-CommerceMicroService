@@ -1,6 +1,5 @@
 using Duende.IdentityServer;
-using eShop.Identity;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using ECommerce.ServiceDefaults;
 using Serilog;
 
 namespace eShop.Identity;
@@ -74,6 +73,8 @@ internal static class HostingExtensions
         
         app.MapRazorPages()
             .RequireAuthorization();
+
+        app.MapDefaultEndpoints();
 
         return app;
     }

@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Infrastructure\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\..\Infrastructure\EventBus.Messages\EventBus.Messages.csproj" />
+    <ProjectReference Include="..\..\..\ServiceDefaults\ECommerce.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Ordering.Application\Ordering.Application.csproj" />
     <ProjectReference Include="..\Ordering.Infrastructure\Ordering.Infrastructure.csproj" />
   </ItemGroup>

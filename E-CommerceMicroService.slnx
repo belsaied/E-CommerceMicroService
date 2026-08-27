@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="E-CommerceMicroService.AppHost/E-CommerceMicroService.AppHost.csproj" />
+  <Project Path="ServiceDefaults/ECommerce.ServiceDefaults.csproj" />
   <Folder Name="/APIGateway/">
     <Project Path="APIGateway/Ocelot.APIGateway/Ocelot.APIGateway.csproj" Id="913e13eb-ca09-4cb4-b2d5-777ee4a10f29" />
   </Folder>

@@ -16,4 +16,8 @@
     <PackageReference Include="Ocelot" Version="24.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\ServiceDefaults\ECommerce.ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>

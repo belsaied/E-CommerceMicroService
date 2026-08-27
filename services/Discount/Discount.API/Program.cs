@@ -5,11 +5,18 @@ using Discount.Application.Mappers;
 using Discount.Core.Repositories;
 using Discount.Infrastructure.Extensions;
 using Discount.Infrastructure.Repositories;
+using ECommerce.ServiceDefaults;
 using Serilog;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.Configuration["DatabaseSettings:ConnectionString"] =
+    builder.Configuration.GetConnectionString("DiscountDb");
+builder.Configuration["ElasticConfiguration:Uri"] =
+    builder.Configuration.GetConnectionString("elasticsearch");
 // Add services to the container.
 builder.Host.UseSerilog(Logging.ConfigureLogging);
 builder.Services.AddControllers();
@@ -31,6 +38,8 @@ if (app.Environment.IsDevelopment())
 
 app.MigrateDatabase<Program>();
 app.UseRouting();
+app.MapDefaultEndpoints();
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapGrpcService<DiscountService>();

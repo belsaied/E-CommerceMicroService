@@ -1,4 +1,5 @@
 using Common.Logging;
+using ECommerce.ServiceDefaults;
 using EventBus.Messages.Common;
 using MassTransit;
 using MassTransit.MultiBus;
@@ -10,8 +11,15 @@ using Ordering.Infrastructure.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+// Aspi.net Core 6 minimal hosting model, so we can use the builder.Services to register services and builder.Configuration to access configuration settings.
+builder.AddServiceDefaults();
 
-
+builder.Configuration["ConnectionStrings:OrderingConnectionString"] =
+    builder.Configuration.GetConnectionString("OrderDb2");
+builder.Configuration["EventBusSettings:HostAddress"] =
+    builder.Configuration.GetConnectionString("rabbitmq");
+builder.Configuration["ElasticConfiguration:Uri"] =
+    builder.Configuration.GetConnectionString("elasticsearch");
 builder.Host.UseSerilog(Logging.ConfigureLogging);
 
 
@@ -55,7 +63,7 @@ builder.Services.AddMassTransit(config =>
 
     config.UsingRabbitMq((ctx, cfg) =>
     {
-        cfg.Host(builder.Configuration["EventBusSettings:HostAddress"]);
+        cfg.Host(new Uri(builder.Configuration["EventBusSettings:HostAddress"]!));
 
         // provide the queue name with consumer
         cfg.ReceiveEndpoint(EventBusConstant.BasketCheckoutQueue, c =>
@@ -90,6 +98,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+app.MapDefaultEndpoints();
 
 app.MapControllers();
 
